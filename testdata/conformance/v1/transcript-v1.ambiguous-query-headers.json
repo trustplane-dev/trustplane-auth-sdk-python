@@ -1,0 +1,109 @@
+{
+  "version": "trustplane-transcript-v1",
+  "kind": "request_transcript",
+  "vector_id": "transcript-v1-ambiguous-query-headers",
+  "raw_request": {
+    "query": "z=last&a=2&a=10&space=a%20b&encoded=%7E&empty=",
+    "body_utf8": "",
+    "headers": [
+      {
+        "name": "X-Ignore-Me",
+        "value": "not-covered"
+      },
+      {
+        "name": "X-TrustPlane-Nonce",
+        "value": "nonce-ambiguous-001"
+      },
+      {
+        "name": "Content-Type",
+        "value": "application/json"
+      }
+    ]
+  },
+  "transcript": {
+    "method": "GET",
+    "scheme": "https",
+    "authority": "orders.example",
+    "path": "/v1/orders/search",
+    "audience": "orders-api",
+    "route_id": "orders.search",
+    "content_encoding": "identity",
+    "query_normalization": {
+      "algorithm": "rfc3986-sort-keys-values",
+      "normalized": "a=10&a=2&empty=&encoded=~&space=a%20b&z=last",
+      "sha256": "459a91b7ac08eae64a30468894720374a64a8a10f6afced8160f9486d2535bd5"
+    },
+    "query_sha256": "459a91b7ac08eae64a30468894720374a64a8a10f6afced8160f9486d2535bd5",
+    "headers": {
+      "allow_list": [
+        "content-type",
+        "x-trustplane-nonce"
+      ],
+      "selected": [
+        {
+          "name": "content-type",
+          "value_sha256": "bacb769b46f6d169fb227ea026550f411d46cbe66a9c2a6ba36449c8cf8e4dea"
+        },
+        {
+          "name": "x-trustplane-nonce",
+          "value_sha256": "42d1167f483f1abb828919200fea8602c90a30de2a491526e2630418ca4db319"
+        }
+      ]
+    },
+    "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "passport_jti": "passport-v1-ambiguous-001",
+    "nonce": "nonce-ambiguous-001",
+    "issued_at": 1740000021,
+    "time_bucket": 87000001,
+    "key_binding": "hardware_local",
+    "covered_fields": [
+      "method",
+      "scheme",
+      "authority",
+      "path",
+      "audience",
+      "route_id",
+      "content_encoding",
+      "query_normalization.algorithm",
+      "query_normalization.normalized",
+      "query_normalization.sha256",
+      "query_sha256",
+      "headers.allow_list",
+      "headers.selected",
+      "body_sha256",
+      "passport_jti",
+      "nonce",
+      "issued_at",
+      "time_bucket",
+      "key_binding"
+    ]
+  },
+  "canonical": {
+    "format": "trustplane-transcript-v1-lines",
+    "line_separator": "LF",
+    "trailing_newline": false,
+    "lines": [
+      "version=trustplane-transcript-v1",
+      "method=GET",
+      "scheme=https",
+      "authority=orders.example",
+      "path=/v1/orders/search",
+      "audience=orders-api",
+      "route_id=orders.search",
+      "content_encoding=identity",
+      "query_normalization.algorithm=rfc3986-sort-keys-values",
+      "query_normalization.normalized=a=10&a=2&empty=&encoded=~&space=a%20b&z=last",
+      "query_normalization.sha256=459a91b7ac08eae64a30468894720374a64a8a10f6afced8160f9486d2535bd5",
+      "query_sha256=459a91b7ac08eae64a30468894720374a64a8a10f6afced8160f9486d2535bd5",
+      "headers.allow_list=content-type,x-trustplane-nonce",
+      "headers.selected=content-type:bacb769b46f6d169fb227ea026550f411d46cbe66a9c2a6ba36449c8cf8e4dea,x-trustplane-nonce:42d1167f483f1abb828919200fea8602c90a30de2a491526e2630418ca4db319",
+      "body_sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "passport_jti=passport-v1-ambiguous-001",
+      "nonce=nonce-ambiguous-001",
+      "issued_at=1740000021",
+      "time_bucket=87000001",
+      "key_binding=hardware_local"
+    ],
+    "sha256": "2e8a658352d8133ef3c4149865f4a3ad287857c414c6dfc8925e2c85519d37c8"
+  }
+}

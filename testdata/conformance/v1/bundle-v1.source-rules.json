@@ -1,0 +1,97 @@
+{
+  "version": "trustplane-bundle-source-rules-v1",
+  "kind": "bundle_source_rule_vectors",
+  "policy_bundle": {
+    "version": "trustplane-bundle-v1",
+    "kind": "policy_runtime_bundle",
+    "contract_metadata": {
+      "trust_material_fixture": "trust-material-bundle-v1.valid.json",
+      "runtime_enforcement": "contract_fixture",
+      "request_binding": "transcript-v1"
+    },
+    "trust_domain": "example.local",
+    "apis": [
+      {
+        "api_id": "orders-api",
+        "audience": "orders-api",
+        "base_url": "https://orders.example"
+      }
+    ],
+    "route_groups": [
+      {
+        "route_group_id": "orders-read",
+        "api_id": "orders-api",
+        "routes": [
+          {
+            "route_id": "orders.search",
+            "method": "GET",
+            "path_template": "/v1/orders/search",
+            "risk": "medium",
+            "required_key_binding": "software",
+            "allowed_sources": [
+              {
+                "source_type": "software_jwks",
+                "issuer": "https://issuer.example/software-jwks",
+                "trust_domain": "example.local",
+                "subject_exact": "service:orders-client",
+                "required_key_binding": "software"
+              },
+              {
+                "source_type": "oidc_jwks",
+                "issuer": "https://issuer.example/oidc",
+                "trust_domain": "example.local",
+                "subject_exact": "system:serviceaccount:automation:orders-runner",
+                "required_key_binding": "software",
+                "context_policy": {
+                  "required_tool_name": "orders-runner",
+                  "required_workflow_id": "orders-search"
+                }
+              },
+              {
+                "source_type": "spiffe_spire",
+                "issuer": "https://issuer.example/spire",
+                "trust_domain": "example.local",
+                "subject_prefix": "spiffe://example.local/ns/orders/sa/",
+                "required_key_binding": "attested_workload",
+                "provenance_policy": {
+                  "profile": "trustplane-spiffe-spire-k8s-v1",
+                  "required_spiffe_trust_domain": "example.local",
+                  "required_posture": "spiffe_svid_verified"
+                }
+              }
+            ],
+            "freshness_class": "bounded",
+            "max_staleness_seconds": 300
+          }
+        ]
+      }
+    ],
+    "scopes": [
+      {
+        "scope": "orders:read",
+        "route_group_id": "orders-read"
+      }
+    ],
+    "default_required_key_binding": "software",
+    "default_freshness_class": "bounded",
+    "default_max_staleness_seconds": 300,
+    "revocations": [],
+    "revocation_feed": {
+      "freshness_class": "bounded"
+    },
+    "signed_by": {
+      "issuer": "local://trustplane.bundle.build",
+      "kid": "unsigned-skeleton",
+      "alg": "none"
+    },
+    "signature": {
+      "format": "unsigned-skeleton",
+      "value": "local-build-placeholder-not-a-production-signature"
+    }
+  },
+  "expected_source_types": [
+    "software_jwks",
+    "oidc_jwks",
+    "spiffe_spire"
+  ]
+}

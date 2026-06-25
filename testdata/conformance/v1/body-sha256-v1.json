@@ -1,0 +1,18 @@
+{
+  "version": "trustplane-body-sha256-v1",
+  "kind": "body_sha256_vectors",
+  "vectors": [
+    {
+      "id": "empty-body",
+      "encoding": "utf-8",
+      "bytes_utf8": "",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "json-compact-order",
+      "encoding": "utf-8",
+      "bytes_utf8": "{\"order_id\":\"ord_123\",\"amount\":\"42.00\"}",
+      "sha256": "fe137df4cb134851105a029132b24efe021a81648fbc83cfc0d4ae8611821c13"
+    }
+  ]
+}

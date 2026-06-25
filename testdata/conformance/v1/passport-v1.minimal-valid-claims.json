@@ -1,0 +1,35 @@
+{
+  "version": "trustplane-passport-v1",
+  "kind": "passport_claims_shape",
+  "vector_id": "passport-v1-minimal-valid-claims",
+  "contract_metadata": {
+    "request_binding": "transcript-v1",
+    "note": "Minimal valid claim shape only. This vector is not a compact JWT, not a signature fixture, and contains only a deterministic test-only Ed25519 public key."
+  },
+  "claims": {
+    "iss": "https://issuer.example",
+    "sub": "spiffe://example.local/workload/orders",
+    "aud": "orders-api",
+    "iat": 1740000000,
+    "exp": 1740000300,
+    "jti": "passport-v1-minimal-001",
+    "trust_domain": "example.local",
+    "cnf": {
+      "kid": "proof-key-1",
+      "key_binding": "hardware_local",
+      "public_key_b64url": "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"
+    }
+  },
+  "required_claims": [
+    "iss",
+    "sub",
+    "aud",
+    "iat",
+    "exp",
+    "jti",
+    "trust_domain",
+    "cnf.kid",
+    "cnf.key_binding",
+    "cnf.public_key_b64url"
+  ]
+}

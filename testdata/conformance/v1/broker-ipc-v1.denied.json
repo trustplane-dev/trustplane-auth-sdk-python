@@ -1,0 +1,90 @@
+{
+  "version": "trustplane-broker-ipc-v1",
+  "kind": "broker_ipc_exchange",
+  "case": "issue_request_bound_passport_denied_insufficient_key_binding",
+  "contract_metadata": {
+    "runtime_enforcement": "contract_only_tp_021",
+    "request_binding": "transcript-v1",
+    "runtime_note": "This fixture locks the local broker IPC request and response shape only. It does not start a broker, open a socket, or contain real signed passport or stamp material."
+  },
+  "request": {
+    "request_id": "broker-ipc-v1-denied-001",
+    "protocol": "local-json-ipc",
+    "operation": "issue_request_bound_passport",
+    "http": {
+      "method": "POST",
+      "scheme": "https",
+      "authority": "orders.example",
+      "path": "/v1/orders",
+      "content_encoding": "identity",
+      "query": {
+        "raw": "currency=USD&expand=items",
+        "normalization": "rfc3986-sort-keys-values",
+        "normalized": "currency=USD&expand=items",
+        "sha256": "a897301294666a140e3d75a9495b1b312fd0802d5353e911b3edf15ffd081202"
+      },
+      "headers": {
+        "allow_list": [
+          "content-type",
+          "x-trustplane-nonce"
+        ],
+        "selected": [
+          {
+            "name": "content-type",
+            "value_sha256": "8f7411c6fbd0d9c708bdf19a0c1f9f18e4d25f0b9a7f415090b20f18d05cdbff"
+          },
+          {
+            "name": "x-trustplane-nonce",
+            "value_sha256": "20d8c5a6b6cf3de015b5f4add3e7de775d6069663f0f17f1d8a4d874a12edbfe"
+          }
+        ]
+      },
+      "audience": "orders-api",
+      "route_id": "orders.create",
+      "body_sha256": "940a95d372e94ab3e795a0843fc195ad2dd9a161c6e227b0e18fd6d4a92ace93",
+      "nonce": "nonce-broker-ipc-v1-002"
+    },
+    "key_binding": {
+      "intent": "route_policy_minimum",
+      "requested_key_binding": "attested_workload",
+      "acceptable_key_bindings": [
+        "attested_workload"
+      ],
+      "allow_software_fallback": false
+    },
+    "ctx": {
+      "selected_fields": [
+        "actor_type",
+        "purpose",
+        "tool_name",
+        "workflow_id",
+        "max_txn_value"
+      ],
+      "values": {
+        "actor_type": "service",
+        "purpose": "create_order",
+        "tool_name": "orders-worker",
+        "workflow_id": "wf-contract-001",
+        "max_txn_value": "1000.00"
+      }
+    }
+  },
+  "response": {
+    "request_id": "broker-ipc-v1-denied-001",
+    "accepted": false,
+    "status": "deny",
+    "reason_code": "insufficient_key_binding",
+    "issued_at": 0,
+    "expires_at": 0,
+    "artifacts": null,
+    "error": {
+      "code": "insufficient_key_binding",
+      "message": "requested key binding cannot be satisfied by the local broker",
+      "retryable": false,
+      "details": {
+        "requested_key_binding": "attested_workload",
+        "available_key_binding": "hardware_local"
+      }
+    }
+  }
+}

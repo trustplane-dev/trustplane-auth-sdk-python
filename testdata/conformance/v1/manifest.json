@@ -1,0 +1,68 @@
+{
+  "version": "trustplane-conformance-v1",
+  "suite_version": "v1",
+  "updated": "2026-06-22",
+  "notes": [
+    "All canonical bytes use UTF-8 and LF line separators.",
+    "Transcript canonical bytes are the canonical.lines values joined by LF with no trailing newline.",
+    "Consumers must match expected digests and ordered taxonomy values exactly."
+  ],
+  "vectors": [
+    {
+      "id": "transcript-v1-json-body",
+      "contracts": [
+        "transcript-v1"
+      ],
+      "path": "testdata/conformance/v1/transcript-v1.json"
+    },
+    {
+      "id": "transcript-v1-ambiguous-query-headers",
+      "contracts": [
+        "transcript-v1"
+      ],
+      "path": "testdata/conformance/v1/transcript-v1.ambiguous-query-headers.json"
+    },
+    {
+      "id": "body-sha256-v1",
+      "contracts": [
+        "body-sha256"
+      ],
+      "path": "testdata/conformance/v1/body-sha256-v1.json"
+    },
+    {
+      "id": "passport-v1-minimal-valid-claims",
+      "contracts": [
+        "passport-v1"
+      ],
+      "path": "testdata/conformance/v1/passport-v1.minimal-valid-claims.json"
+    },
+    {
+      "id": "signer-taxonomy-v1",
+      "contracts": [
+        "signer-taxonomy-v1"
+      ],
+      "path": "testdata/conformance/v1/signer-taxonomy-v1.json"
+    },
+    {
+      "id": "bundle-v1-source-rules",
+      "contracts": [
+        "bundle-v1"
+      ],
+      "path": "testdata/conformance/v1/bundle-v1.source-rules.json"
+    },
+    {
+      "id": "broker-ipc-v1-success",
+      "contracts": [
+        "broker-ipc-v1"
+      ],
+      "path": "testdata/conformance/v1/broker-ipc-v1.success.json"
+    },
+    {
+      "id": "broker-ipc-v1-denied",
+      "contracts": [
+        "broker-ipc-v1"
+      ],
+      "path": "testdata/conformance/v1/broker-ipc-v1.denied.json"
+    }
+  ]
+}
