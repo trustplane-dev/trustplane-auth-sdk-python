@@ -1,0 +1,31 @@
+{
+  "version": "trustplane-signer-taxonomy-v1",
+  "ordering": [
+    "software",
+    "remote_kms",
+    "hardware_local",
+    "attested_workload"
+  ],
+  "classes": [
+    {
+      "class": "software",
+      "rank": 10,
+      "summary": "Request proof is signed by software-managed key material."
+    },
+    {
+      "class": "remote_kms",
+      "rank": 20,
+      "summary": "Request proof is signed through a remote key service; key bytes are not local, but caller credentials may remain portable."
+    },
+    {
+      "class": "hardware_local",
+      "rank": 30,
+      "summary": "Request proof is signed by local non-exportable hardware-backed key material."
+    },
+    {
+      "class": "attested_workload",
+      "rank": 40,
+      "summary": "Request proof is signed by a workload with verifier-consumable attestation of the workload or execution environment."
+    }
+  ]
+}
