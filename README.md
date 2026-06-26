@@ -14,7 +14,13 @@ It does not include a verifier, broker, adapter, policy engine, SPIFFE issuer, d
 
 ## Install
 
-Do not install from PyPI yet. Until a release exists, test this repository through a local checkout or built wheel.
+Install released preview versions from PyPI with an exact version pin:
+
+```sh
+python -m pip install trustplane-auth-sdk==0.1.0rc1
+```
+
+For unreleased local changes, test this repository through a local checkout or built wheel.
 
 ## Package Name
 
