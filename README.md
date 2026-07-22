@@ -1,110 +1,59 @@
 # TrustPlane Auth SDK for Python
 
-Preview Python caller SDK for TrustPlane Auth request signing.
+Caller-side Python SDK for TrustPlane Auth.
 
-This package provides caller-side helpers for:
+The source API supports CLI-compatible Ed25519 keys and passports, `transcript-v1` signing, active Control key-grant profiles, arbitrary HTTP methods, TA-G1 public auto-enrollment, and broker IPC v1. Published packages can lag source changes; pin a verified release or use a local checkout for unreleased APIs.
 
-- building `transcript-v1` request material
-- computing body SHA-256 values
-- parsing passport claims needed by signing
-- raw local Ed25519 software signing
-- returning adapter-ready TrustPlane Auth headers
-
-It does not include a verifier, broker, adapter, policy engine, SPIFFE issuer, deployment code, enrollment flow, bundle mutation, or TrustPlane Control API.
-
-## Install
-
-Install released preview versions from PyPI with an exact version pin:
-
-```sh
-python -m pip install trustplane-auth-sdk==0.1.0rc1
-```
-
-For unreleased local changes, test this repository through a local checkout or built wheel.
-
-## Package Name
-
-The Python distribution name candidate is `trustplane-auth-sdk`.
-
-The import module is `trustplane_auth`:
+## Signed request from a key grant
 
 ```python
-from trustplane_auth import body_sha256, build_request, sign_request
-```
-
-The package version remains `0.0.0` until the release workflow is introduced.
-
-PyPI trusted publishing is planned in a follow-up.
-
-## Build Request Example
-
-```python
-from trustplane_auth import SOFTWARE_KEY_BINDING, Header, build_request
-
-material = build_request(
-    method="POST",
-    scheme="https",
-    authority="orders.example",
-    path="/v1/orders",
-    audience="orders-api",
-    route_id="orders.create",
-    content_encoding="identity",
-    body=b'{"order_id":"ord_123","amount":"42.00"}',
-    headers=[
-        Header(name="Content-Type", value="application/json"),
-        Header(name="X-TrustPlane-Nonce", value="nonce-v1-001"),
-    ],
-    header_allow_list=["content-type", "x-trustplane-nonce"],
-    passport_jti="passport-v1-minimal-001",
-    nonce="nonce-v1-001",
-    issued_at_unix=1740000000,
-    key_binding=SOFTWARE_KEY_BINDING,
+from trustplane_auth import (
+    ProtectedClient,
+    SigningProfile,
+    private_key_from_base64url,
 )
 
-print(material.transcript_sha256)
+profile = SigningProfile.from_control(control_signing_profile_json)
+private_key = private_key_from_base64url(private_key_file_contents.strip())
+client = ProtectedClient(profile, private_key)
+
+response = client.request(
+    profile.method,
+    "/orders/123?expand=items",
+    headers={"Accept": "application/json"},
+)
 ```
 
-## Signing Example
+Each request receives a fresh short-lived passport/JTI, nonce, canonical body/query/header digest, and proof. The client rejects a method or path outside the active profile, including sibling-prefix mistakes. Parameterized profiles require a concrete path (`/orders/123`, not `/orders/{id}`); encoded or ambiguous paths fail closed, query-only targets retain a literal profile path, and redirects are not followed with TrustPlane credentials.
 
-Signing requires a real passport whose `cnf.key_binding` is `software` and whose `cnf.public_key_b64url` matches the Ed25519 private key.
+## Auto-enrollment
 
 ```python
-from pathlib import Path
+from trustplane_auth import EnrollmentClient, EnrollmentOptions, jwt_enrollment_proof
 
-from trustplane_auth import Header, sign_request
-
-passport = "header.payload.signature"
-private_key_pem = Path("ed25519-private-key.pem").read_bytes()
-
-signed = sign_request(
-    request={
-        "method": "POST",
-        "scheme": "https",
-        "authority": "orders.example",
-        "path": "/v1/orders",
-        "route_id": "orders.create",
-        "content_encoding": "identity",
-        "body": b'{"order_id":"ord_123","amount":"42.00"}',
-        "headers": [
-            Header(name="Content-Type", value="application/json"),
-            Header(name="X-TrustPlane-Nonce", value="nonce-v1-001"),
-        ],
-        "header_allow_list": ["content-type", "x-trustplane-nonce"],
-        "nonce": "nonce-v1-001",
-    },
-    passport_token=passport,
-    private_key=private_key_pem,
+result = EnrollmentClient().enroll(
+    EnrollmentOptions(
+        control_url="https://control.example",
+        enrollment_policy_ref="enrpol_...",
+        provider="kubernetes_service_account_oidc",
+        private_key=private_key,
+        proof_provider=lambda challenge: jwt_enrollment_proof(
+            obtain_audience_bound_token(challenge.expected_audience)
+        ),
+    )
 )
-
-headers = signed.headers
 ```
 
-`sign_request` reads passport-bound fields from the passport and fails if caller-supplied consistency checks conflict. It does not infer or repair `aud`, `jti`, `iat`, `cnf.kid`, `cnf.key_binding`, or `cnf.public_key_b64url` from caller request inputs.
+The SDK validates Control's immutable source revision, Azure proof mode when applicable, and required encoding before invoking the proof callback. Helpers also build AWS IID and Azure IMDS attested-document proof values. The safe result never contains proof, key, nonce, signature, or poll capability material. Enrollment requires HTTPS.
 
-## Conformance Posture
+Provider credential acquisition stays in the application callback so it can use the host's projected token, CI, SPIFFE, or cloud metadata client. The SDK owns the complete Control protocol. Once a submission is accepted, a polling deadline returns a safe `pending` result with the request ID instead of resubmitting the proof.
 
-`testdata/conformance/v1` contains public-safe contract vectors copied from the TrustPlane Auth reference. Tests assert exact canonical transcript lines, transcript SHA-256 values, and body SHA-256 values.
+## Broker mode
 
-## Security Rule
+`build_broker_request`, `BrokerClient.issue`, and `broker_headers` provide the caller side of broker IPC v1 over a Unix socket. This package does not include the broker runtime.
 
-This SDK signs only the verifier-rebuilt request transcript. Raw local signing is software-only and requires an Ed25519 private key whose public key exactly matches the passport `cnf.public_key_b64url` claim.
+## Scope boundary
+
+This package does not embed a verifier, adapter, policy engine, SPIFFE issuer, deployment logic, Control administrative API, or CLI-only bundle/local-demo commands.
+
+Raw local signing is software-only. Stronger signer classes must be fulfilled by an appropriate broker or signer; they are never simulated with an exportable key.
