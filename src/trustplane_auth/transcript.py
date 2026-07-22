@@ -128,6 +128,11 @@ def body_sha256(body: bytes) -> str:
     return _sha256_hex_bytes(_body_bytes(body))
 
 
+def normalize_query_rfc3986_sort_keys_values(raw: str) -> str:
+    """Return the exact transcript-v1 normalized query representation."""
+    return _normalize_query_rfc3986_sort_keys_values(raw.lstrip("?"))
+
+
 def build_request(
     request: RequestInput | Mapping[str, Any] | None = None,
     **kwargs: Any,
