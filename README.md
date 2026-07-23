@@ -4,6 +4,14 @@ Caller-side Python SDK for TrustPlane Auth.
 
 The source API supports CLI-compatible Ed25519 keys and passports, `transcript-v1` signing, active Control key-grant profiles, arbitrary HTTP methods, TA-G1 public auto-enrollment, and broker IPC v1. Published packages can lag source changes; pin a verified release or use a local checkout for unreleased APIs.
 
+## Install
+
+Install a verified release with an explicit package version:
+
+```sh
+python -m pip install trustplane-auth-sdk==0.2.2
+```
+
 ## Signed request from a key grant
 
 ```python

@@ -1,24 +1,25 @@
-name: Manual PyPI Release
+name: Publish Tagged PyPI SDK
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: TrustPlane release tag to prepare, for example v0.1.0-rc.1
+        description: Verified signed TrustPlane release tag to publish, for example v0.2.2
         required: true
         type: string
       publish_package:
-        description: Publish to PyPI, create the release commit, and push the annotated tag
+        description: Publish the already tagged package to PyPI
         required: true
         default: false
         type: boolean
 
 permissions:
-  contents: write
+  contents: read
   id-token: write
 
 env:
   PACKAGE_NAME: trustplane-auth-sdk
+  RELEASE_SIGNING_FINGERPRINT: 6F46FDF8F73DDBAAAF5DEBA1FAB81A8805C362CA
 
 jobs:
   release:
@@ -33,6 +34,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -41,14 +43,10 @@ jobs:
         run: python -m pip install -U pip
       - name: Install package and dev dependencies
         run: python -m pip install -e ".[dev]"
-      - name: Configure release git identity
-        run: |
-          git config user.name "Medh Mesh"
-          git config user.email "maintainer@trustplane.dev"
       - name: Validate version input
         run: |
           if ! printf '%s\n' "${{ inputs.version }}" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$'; then
-            echo "version must look like v0.1.0 or v0.1.0-rc.1"
+            echo "version must look like v0.2.2 or v0.2.2-rc.1"
             exit 1
           fi
           python - <<'PY'
@@ -70,16 +68,41 @@ jobs:
           PY
         env:
           INPUT_VERSION: ${{ inputs.version }}
-      - name: Refuse existing git tag
+      - name: Verify signed release tag targets main
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
         run: |
-          if git rev-parse -q --verify "refs/tags/${{ inputs.version }}" >/dev/null; then
-            echo "local tag already exists: ${{ inputs.version }}"
+          if ! git rev-parse -q --verify "refs/tags/$RELEASE_VERSION" >/dev/null; then
+            echo "missing release tag: $RELEASE_VERSION"
             exit 1
           fi
-          if git ls-remote --exit-code --tags origin "refs/tags/${{ inputs.version }}" >/dev/null 2>&1; then
-            echo "remote tag already exists: ${{ inputs.version }}"
+          if [ "$(git rev-parse "$RELEASE_VERSION^{commit}")" != "$(git rev-parse HEAD)" ]; then
+            echo "release tag must target the dispatched main commit"
             exit 1
           fi
+          export GNUPGHOME="$(mktemp -d)"
+          trap 'rm -rf "$GNUPGHOME"' EXIT
+          gpg --batch --import .github/release-signing-key.asc
+          if ! verification="$(git verify-tag --raw "$RELEASE_VERSION" 2>&1)"; then
+            printf '%s\n' "$verification"
+            exit 1
+          fi
+          printf '%s\n' "$verification"
+          printf '%s\n' "$verification" | grep -F "[GNUPG:] VALIDSIG $RELEASE_SIGNING_FINGERPRINT " >/dev/null
+      - name: Verify package version matches the release tag
+        run: |
+          python - <<'PY'
+          import os
+          import tomllib
+
+          with open("pyproject.toml", "rb") as file:
+              package_version = tomllib.load(file)["project"]["version"]
+          expected_version = os.environ["PYTHON_PACKAGE_VERSION"]
+          if package_version != expected_version:
+              raise SystemExit(
+                  f"pyproject.toml version {package_version} does not match release version {expected_version}"
+              )
+          PY
       - name: Refuse existing PyPI version
         run: |
           python - <<'PY'
@@ -117,63 +140,6 @@ jobs:
         run: scripts/scan-leaks.sh
       - name: Wording scan
         run: scripts/scan-wording.sh
-      - name: Verify clean worktree before version update
-        run: |
-          status="$(git status --short)"
-          printf '%s\n' "$status"
-          if [ -n "$status" ]; then
-            echo "worktree must be clean before version update"
-            exit 1
-          fi
-      - name: Set package version and README install command
-        run: |
-          python - <<'PY'
-          import os
-          from pathlib import Path
-
-          package_version = os.environ["PYTHON_PACKAGE_VERSION"]
-          path = Path("pyproject.toml")
-          lines = path.read_text(encoding="utf-8").splitlines()
-          changed = False
-          for index, line in enumerate(lines):
-              if line.startswith("version = "):
-                  lines[index] = f'version = "{package_version}"'
-                  changed = True
-                  break
-          if not changed:
-              raise SystemExit("pyproject.toml project version not found")
-          path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-
-          readme = Path("README.md")
-          text = readme.read_text(encoding="utf-8")
-          prefix, install_marker, rest = text.partition("## Install\n")
-          old_install, package_marker, suffix = rest.partition("## Package Name\n")
-          if install_marker == "" or package_marker == "":
-              raise SystemExit("README package section marker not found")
-          install_section = (
-              "## Install\n\n"
-              "Install released preview versions from PyPI with an exact version pin:\n\n"
-              "```sh\n"
-              f"python -m pip install trustplane-auth-sdk=={package_version}\n"
-              "```\n\n"
-              "For unreleased local changes, test this repository through a local checkout or built wheel.\n\n"
-          )
-          readme.write_text(prefix + install_section + package_marker + suffix, encoding="utf-8")
-          PY
-      - name: Verify only release metadata is dirty
-        run: |
-          status="$(git status --short)"
-          printf '%s\n' "$status"
-          python - <<'PY'
-          import subprocess
-
-          dirty = subprocess.check_output(
-              ["git", "diff", "--name-only"],
-              text=True,
-          ).splitlines()
-          if dirty != ["README.md", "pyproject.toml"]:
-              raise SystemExit(f"unexpected worktree state after version update: {dirty}")
-          PY
       - name: Build sdist and wheel
         run: python -m build
       - name: Clean wheel install/import smoke
@@ -184,13 +150,9 @@ jobs:
           {
             echo "### PyPI release readiness complete"
             echo
-            echo "Prepared and smoke-tested $PACKAGE_NAME==$PYTHON_PACKAGE_VERSION."
+            echo "Verified the signed tag and smoke-tested $PACKAGE_NAME==$PYTHON_PACKAGE_VERSION."
             echo
-            echo "TrustPlane release version: ${{ inputs.version }}"
-            echo
-            echo "publish_package=false, so this run did not create a commit, tag, PyPI publish, or GitHub Release."
-            echo
-            echo "To publish later, rerun from main with publish_package=true after PyPI Trusted Publishing is configured."
+            echo "publish_package=false, so this run did not publish to PyPI."
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Require PyPI Trusted Publishing
         if: ${{ inputs.publish_package }}
@@ -203,13 +165,6 @@ jobs:
       - name: Publish package with PyPI Trusted Publishing
         if: ${{ inputs.publish_package }}
         uses: pypa/gh-action-pypi-publish@release/v1
-      - name: Commit version, tag, and push
-        if: ${{ inputs.publish_package }}
-        run: |
-          git add README.md pyproject.toml
-          git commit -m "Release Python SDK ${{ inputs.version }}"
-          git tag -a "${{ inputs.version }}" -m "TrustPlane Auth Python SDK ${{ inputs.version }}"
-          git push origin "HEAD:main" "refs/tags/${{ inputs.version }}"
       - name: Publish summary
         if: ${{ inputs.publish_package }}
         run: |
@@ -217,10 +172,4 @@ jobs:
             echo "### PyPI release published"
             echo
             echo "Published $PACKAGE_NAME==$PYTHON_PACKAGE_VERSION with PyPI Trusted Publishing."
-            echo
-            echo "TrustPlane release version: ${{ inputs.version }}"
-            echo
-            echo "No GitHub Release was created by this workflow. Track any GitHub Release as a follow-up release task if repo policy later requires one."
-            echo
-            echo "Recovery note: PyPI publish runs before git commit/tag push. If PyPI publish fails, there is no release commit or tag to repair. If git push fails after PyPI publish, do not republish or overwrite PyPI; repair the git commit/tag publication from the same workflow commit and package version."
           } >> "$GITHUB_STEP_SUMMARY"
