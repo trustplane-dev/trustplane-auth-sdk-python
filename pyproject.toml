@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "trustplane-auth-sdk"
-version = "0.1.0rc1"
+version = "0.2.2"
 description = "Python SDK foundation for TrustPlane Auth request material and local Ed25519 signing"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -13,7 +13,7 @@ authors = [
   { name = "TrustPlane" }
 ]
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
   "License :: OSI Approved :: Apache Software License",
   "Programming Language :: Python :: 3",
