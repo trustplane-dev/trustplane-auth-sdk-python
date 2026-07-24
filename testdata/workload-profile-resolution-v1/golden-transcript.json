@@ -1,0 +1,15 @@
+{
+  "transcript_version": "trustplane-workload-profile-resolution-pop-v1",
+  "method": "POST",
+  "path": "/v1/public/workload-profiles/resolve",
+  "challenge_id": "wpr-challenge-golden-001",
+  "nonce": "golden-nonce-0000000001",
+  "issued_at_unix": 1760000000,
+  "expires_at_unix": 1760000120,
+  "policy_ref": "policy://golden/workload-profile",
+  "policy_fingerprint_sha256": "sha256:79a5e5ff2b3d30871b72445f6ed0424999d5242a9c830b5aaaab4310847e4517",
+  "key_id": "ta-key-golden-001",
+  "public_key_b64url": "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo",
+  "transcript_b64url": "dHJ1c3RwbGFuZS13b3JrbG9hZC1wcm9maWxlLXJlc29sdXRpb24tcG9wLXYxClBPU1QKL3YxL3B1YmxpYy93b3JrbG9hZC1wcm9maWxlcy9yZXNvbHZlCndwci1jaGFsbGVuZ2UtZ29sZGVuLTAwMQpnb2xkZW4tbm9uY2UtMDAwMDAwMDAwMQoxNzYwMDAwMDAwCjE3NjAwMDAxMjAKc2hhMjU2Ojc5YTVlNWZmMmIzZDMwODcxYjcyNDQ1ZjZlZDA0MjQ5OTlkNTI0MmE5YzgzMGI1YWFhYWI0MzEwODQ3ZTQ1MTcKdGEta2V5LWdvbGRlbi0wMDEK",
+  "signature_b64url": "WxH18_B64lPtUV4dJS2dBkbyj1SgF_dDBErHi4KzF1_fXE0I1NfYR8Me4oQoWEIJH2J3WAmN0JSw91GB8QvXDQ"
+}
