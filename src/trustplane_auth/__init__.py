@@ -66,6 +66,20 @@ from .transcript import (
     build_request,
     normalize_query_rfc3986_sort_keys_values,
 )
+from .workload_profiles import (
+    MAX_WORKLOAD_PROFILES,
+    WORKLOAD_PROFILE_CHALLENGE_PATH,
+    WORKLOAD_PROFILE_POP_DOMAIN,
+    WORKLOAD_PROFILE_RESOLVE_PATH,
+    WORKLOAD_PROFILE_TRANSCRIPT_VERSION,
+    WorkloadProfileChallenge,
+    WorkloadProfileClient,
+    WorkloadProfileError,
+    WorkloadProfileOptions,
+    WorkloadProfileResolution,
+    WorkloadSigningProfile,
+    workload_profile_pop_transcript,
+)
 
 __all__ = [
     "ATTESTED_WORKLOAD_KEY_BINDING",
@@ -85,6 +99,7 @@ __all__ = [
     "HEADER_NONCE",
     "HEADER_PROOF",
     "HEADER_TRANSCRIPT_SHA256",
+    "MAX_WORKLOAD_PROFILES",
     "ENROLLMENT_CHALLENGE_PATH",
     "ENROLLMENT_POP_DOMAIN",
     "ENROLLMENT_STATUS_PATH",
@@ -114,6 +129,16 @@ __all__ = [
     "RequestMaterial",
     "SignedRequest",
     "SigningProfile",
+    "WORKLOAD_PROFILE_CHALLENGE_PATH",
+    "WORKLOAD_PROFILE_POP_DOMAIN",
+    "WORKLOAD_PROFILE_RESOLVE_PATH",
+    "WORKLOAD_PROFILE_TRANSCRIPT_VERSION",
+    "WorkloadProfileChallenge",
+    "WorkloadProfileClient",
+    "WorkloadProfileError",
+    "WorkloadProfileOptions",
+    "WorkloadProfileResolution",
+    "WorkloadSigningProfile",
     "validate_concrete_request_path",
     "aws_iid_enrollment_proof",
     "azure_imds_enrollment_proof",
@@ -130,4 +155,5 @@ __all__ = [
     "private_key_from_base64url",
     "raw_public_key",
     "sign_request",
+    "workload_profile_pop_transcript",
 ]

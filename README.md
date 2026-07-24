@@ -56,6 +56,37 @@ The SDK validates Control's immutable source revision, Azure proof mode when app
 
 Provider credential acquisition stays in the application callback so it can use the host's projected token, CI, SPIFFE, or cloud metadata client. The SDK owns the complete Control protocol. Once a submission is accepted, a polling deadline returns a safe `pending` result with the request ID instead of resubmitting the proof.
 
+## Workload profile resolution
+
+After Control activates the enrolled key and the corresponding target
+configuration is acknowledged, resolve the key's own public profiles with the
+same local key. This path needs no Control Read Token or manually supplied
+profile:
+
+```python
+from trustplane_auth import WorkloadProfileClient, WorkloadProfileOptions
+
+resolution = WorkloadProfileClient().resolve(
+    WorkloadProfileOptions(
+        control_url="https://control.example",
+        enrollment_policy_ref="enrpol_...",
+        key_id=enrollment_result.key_id,
+        private_key=private_key,
+    )
+)
+
+if resolution.state == "active":
+    profile = resolution.select_profile("GET", "/api/customers")
+    protected_client = ProtectedClient(profile.to_signing_profile(), private_key)
+```
+
+The client signs Control's short-lived, single-use challenge with the local
+Ed25519 key and validates the key/policy binding, expiry boundaries, and public
+response schema. `pending`, `inactive_key`, and `unavailable` are stable
+results; only `inactive_key` is a reason to enroll a replacement key. Local
+selection rejects zero or ambiguous method/path matches. Active profile caching
+stops at the earliest key expiry, profile expiry, or server refresh boundary.
+
 ## Broker mode
 
 `build_broker_request`, `BrokerClient.issue`, and `broker_headers` provide the caller side of broker IPC v1 over a Unix socket. This package does not include the broker runtime.
